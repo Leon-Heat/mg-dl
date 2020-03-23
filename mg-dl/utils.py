@@ -4,19 +4,26 @@ def regular_exp(s):
     # Remove all non-word characters (everything except numbers and letters)
     s = re.sub(r"[^\w\s]", '', s)
     # Replace all runs of whitespace with a single dash
-    s = re.sub(r"\s+", '_', s)
+    s = re.sub(r"\s+", '-', s)
 
     return s
 
 
 def if_dir(parent_dir):
+    print('directory=%s', parent_dir)
     if parent_dir is None:
         print('\nPlease enter the directory for download:')
         print("e.g: /home/user/manga\nPlease don't use back slash in the end. \n")
         parent_dir = input('Enter directory:')
-
     return parent_dir
 
+def read_config(string):
+    for line in open('config'):
+
+        if re.match(string, line):
+            line = re.split(string , line)
+            return line[1]
+    
 
 def help():
     print("\n\n\tThe program is going to need user to specify their desired manga and specific path")
@@ -32,3 +39,4 @@ def help():
     print("\t-R   Re-download a chapter.")
     print("\t-d   Download specified range of chapters within the manga.")
     print("\t-D   Download all chapters available.\n\n")
+

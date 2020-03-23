@@ -8,18 +8,21 @@ from utils import *
 
 import time, os, wget, getopt, sys
 
+class Manga():
+    driver = None
+    parent_dir = None
+
 def profile():  # Setting up profile for driver
-    global driver
     profile = webdriver.FirefoxProfile()
     profile.set_preference('places.history.enabled', False )
     profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', False)
     profile.set_preference('javascript.enabled', False )
-    driver = webdriver.Firefox(firefox_profile = profile)
+    Manga.driver = webdriver.Firefox(firefox_profile = profile)
 
 
 def on_and_search(key):  # Search the manga and access to the page that contains list of chapters.
     print('Searching manga....')
-    driver.get('https://kissmanga.com/Manga/%s' % key)
+    Manga.driver.get('https://kissmanga.com/Manga/%s' % key)
     wait_and_click(30, '//tr//td//a[contains(@href, "/Manga/")]')
     wait(20, '//select[contains(@class, "selectChapter")]', 'presence')
 
@@ -27,7 +30,7 @@ def on_and_search(key):  # Search the manga and access to the page that contains
 def list_init():  # Statements for creating a list.
     print('Getting list of chapters....')
     global s_elem, name_list, name
-    s_elem = driver.find_element_by_xpath('//select[contains(@class, "selectChapter")]')
+    s_elem = Manga.driver.find_element_by_xpath('//select[contains(@class, "selectChapter")]')
     name_list = s_elem.find_elements_by_tag_name('option')
     name = []
 
@@ -61,9 +64,9 @@ def download(key, Min, Max, parent_dir):  # This goes back to the previous page 
     x = 0
     for l in name_list:
         x += 1
-        driver.get('https://kissmanga.com/Manga/%s' % key)
+        Manga.driver.get('https://kissmanga.com/Manga/%s' % key)
         wait_and_click(20, '//a[contains(text(), "%s")]' % name[x-1])
-        path = '%s/%s/%s' %(parent_dir, dir, regular_exp(name[x-1]))
+        path = '%s/%s/%d.%s' %(parent_dir, dir, x, regular_exp(name[x-1]))
         mkdir_chapter(path)
         fetch(path, name[x-1])
 
@@ -71,7 +74,7 @@ def download(key, Min, Max, parent_dir):  # This goes back to the previous page 
 def fetch(path_dir, chapter):
     print('Downloading %s....' % chapter)
     wait(5, '//div[contains(@id, "divImage")]//p//img', 'presence')
-    images = driver.find_elements_by_xpath('//div[contains(@id, "divImage")]//p//img')
+    images = Manga.driver.find_elements_by_xpath('//div[contains(@id, "divImage")]//p//img')
     n = 0
 
     for image in images:
@@ -91,13 +94,13 @@ def mkdir_chapter(path_dir):
     print('Directory "%s" has been created' % path_dir) 
 
 def wait_and_click(time, string):  # Wait for an element to be usable and click
-    Wait(driver, time).until(EC.element_to_be_clickable((By.XPATH, string)))
-    link = driver.find_element_by_xpath(string)
+    Wait(Manga.driver, time).until(EC.element_to_be_clickable((By.XPATH, string)))
+    link = Manga.driver.find_element_by_xpath(string)
     link.click()
 
 def wait(time, string, mode):  # Wait for an element to be usable
     if mode == 'clickable':
-        Wait(driver, time).until(EC.element_to_be_clickable((By.XPATH, string)))
+        Wait(Manga.driver, time).until(EC.element_to_be_clickable((By.XPATH, string)))
     elif mode == 'presence':
-        Wait(driver, time).until(EC.presence_of_element_located((By.XPATH, string)))
+        Wait(Manga.driver, time).until(EC.presence_of_element_located((By.XPATH, string)))
 
